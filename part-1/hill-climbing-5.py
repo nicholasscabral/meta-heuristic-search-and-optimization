@@ -37,8 +37,9 @@ limite_superior_x1 = 2
 limite_inferior_x2 = -1
 limite_superior_x2 = 3
 epsilon = 0.1
-maxit = 1000
-rodadas = 100
+#Está demorando mais do que o normal. Testei com valores menores apenas para verificar se estava funcionando.
+maxit = 10
+rodadas = 2
 
 # Executa o algoritmo Hill Climbing em 100 rodadas
 resultados_por_rodada = []

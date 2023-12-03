@@ -39,40 +39,31 @@ maxit = 1000
 rodadas = 100
 
 # Executa o algoritmo Hill Climbing em 100 rodadas
-todos_resultados = []
+resultados_por_rodada = []
 
 for _ in range(rodadas):
     resultados = hill_climbing(limite_inferior, limite_superior, epsilon, maxit)
-    todos_resultados.extend(resultados)
+    resultados_por_rodada.append(resultados)
 
-# Encontra o resultado ótimo global
-resultado_otimo_global = min(todos_resultados, key=lambda x: x[2])
+# Encontra o ótimo global entre as rodadas
+resultados_globais = [min(resultados, key=lambda x: x[2]) for resultados in resultados_por_rodada]
+resultado_otimo_global = min(resultados_globais, key=lambda x: x[2])
 
 # Criação do gráfico da função
-x1_vals = np.linspace(limite_inferior, limite_superior, 100)
-x2_vals = np.linspace(limite_inferior, limite_superior, 100)
-X1, X2 = np.meshgrid(x1_vals, x2_vals)
-Y = funcao_objetivo(X1, X2)
-
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
-ax.plot_surface(X1, X2, Y, rstride=10, cstride=10, alpha=0.6, cmap='viridis')
 
-# Extrai as coordenadas de x, y e z dos resultados
-x_points = [result[0] for result in todos_resultados]
-y_points = [result[1] for result in todos_resultados]
-z_points = [result[2] for result in todos_resultados]
+# Plota os ótimos de cada rodada de forma mais transparente
+for resultado in resultados_globais:
+    ax.scatter(resultado[0], resultado[1], resultado[2], marker='o', s=50, linewidth=1, color='green', alpha=0.2)
 
-# Plota todos os pontos encontrados durante as 1000 iterações de cada rodada
-ax.scatter(x_points, y_points, z_points, c='green', marker='o', alpha=0.1, label='Pontos das Iterações')
-
-# Plota o ótimo global com uma cor diferente e marcador maior
+# Plota o ótimo global de forma mais destacada
 ax.scatter(resultado_otimo_global[0], resultado_otimo_global[1], resultado_otimo_global[2], marker='x', s=200, linewidth=3, color='red', label='Ótimo Global')
 
 ax.set_xlabel('x1')
 ax.set_ylabel('x2')
 ax.set_zlabel('f(x1, x2)')
-ax.set_title('f(x1, x2) - Hill Climbing (Mínimo) - Iterações e Ótimo Global')
+ax.set_title('f(x1, x2) - Hill Climbing (Mínimo) - Ótimos por Rodada e Ótimo Global')
 ax.legend()
 
 plt.tight_layout()
