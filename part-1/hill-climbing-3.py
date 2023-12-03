@@ -50,8 +50,14 @@ resultados_globais = [min(resultados, key=lambda x: x[2]) for resultados in resu
 resultado_otimo_global = min(resultados_globais, key=lambda x: x[2])
 
 # Criação do gráfico da função
+x1_vals = np.linspace(limite_inferior, limite_superior, 100)
+x2_vals = np.linspace(limite_inferior, limite_superior, 100)
+X1, X2 = np.meshgrid(x1_vals, x2_vals)
+Y = funcao_objetivo(X1, X2)
+
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
+ax.plot_surface(X1, X2, Y, rstride=10, cstride=10, alpha=0.6, cmap='viridis')
 
 # Plota os ótimos de cada rodada de forma mais transparente
 for resultado in resultados_globais:

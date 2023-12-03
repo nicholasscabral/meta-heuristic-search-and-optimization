@@ -9,8 +9,8 @@ def restricao_caixa(x, limite_inferior, limite_superior):
     return np.maximum(limite_inferior, np.minimum(x, limite_superior))
 
 def funcao_objetivo(x1, x2):
-    termo1 = -(x2 + 47) * np.sin(np.abs(x1/2 + (x2 + 47))) * 1e-2
-    termo2 = -x1 * np.sin(np.abs(x1 - (x2 + 47))) * 1e-2
+    termo1 = -(x2 + 47) * np.sin(np.abs(x1/2 + (x2 + 47)))
+    termo2 = -x1 * np.sin(np.abs(x1 - (x2 + 47)))
     return termo1 + termo2
 
 def hill_climbing(limite_inferior_x1, limite_superior_x1, limite_inferior_x2, limite_superior_x2, epsilon, maxit):
@@ -51,6 +51,10 @@ Y = funcao_objetivo(X1, X2)
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 ax.plot_surface(X1, X2, Y, rstride=10, cstride=10, alpha=0.6, cmap='viridis')
+
+# Plota os ótimos de cada rodada de forma mais transparente
+for resultado in resultados_globais:
+    ax.scatter(resultado[0], resultado[1], resultado[2], marker='o', s=50, linewidth=1, color='green', alpha=0.2)
 
 # Plota o ótimo global de forma mais destacada
 ax.scatter(resultado_otimo_global[0], resultado_otimo_global[1], resultado_otimo_global[2], marker='x', s=200, linewidth=3, color='red', label='Ótimo Global')
