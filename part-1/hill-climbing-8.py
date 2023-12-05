@@ -9,9 +9,7 @@ def restricao_caixa(x, limite_inferior, limite_superior):
     return np.maximum(limite_inferior, np.minimum(x, limite_superior))
 
 def funcao_objetivo(x1, x2):
-    termo1 = -(x2 + 47) * np.sin(np.abs(x1/2 + (x2 + 47)))
-    termo2 = -x1 * np.sin(np.abs(x1 - (x2 + 47)))
-    return termo1 + termo2
+    return -(x2 + 47) * np.sin(np.sqrt(np.abs(x1/2 + (x2 + 47)))) - x1 * np.sin(np.sqrt(np.abs(x1 - (x2 + 47))))
 
 def hill_climbing(limite_inferior_x1, limite_superior_x1, limite_inferior_x2, limite_superior_x2, epsilon, maxit):
     x1_best = np.random.uniform(low=limite_inferior_x1, high=limite_superior_x1)
@@ -30,10 +28,10 @@ def hill_climbing(limite_inferior_x1, limite_superior_x1, limite_inferior_x2, li
     return x1_best, x2_best, fbest
 
 # Substitua os valores apropriados
-limite_inferior_x1 = -200
-limite_superior_x1 = 20
-limite_inferior_x2 = -200
-limite_superior_x2 = 20
+limite_inferior_x1 = -200.0
+limite_superior_x1 = 0.0
+limite_inferior_x2 = -200.0
+limite_superior_x2 = 0.0
 epsilon = 0.1
 maxit = 1000
 rodadas = 100

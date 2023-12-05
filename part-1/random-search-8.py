@@ -3,9 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 def objective_function(x1, x2):
-    termo1 = -(x2 + 47) * np.sin(np.abs(x1/2 + (x2 + 47)))
-    termo2 = -x1 * np.sin(np.abs(x1 - (x2 + 47)))
-    return termo1 + termo2
+    return -(x2 + 47) * np.sin(np.sqrt(np.abs(x1/2 + (x2 + 47)))) - x1 * np.sin(np.sqrt(np.abs(x1 - (x2 + 47))))
 
 def is_valid(x1, x2, xl, xu):
     return xl <= x1 <= xu and xl <= x2 <= xu
@@ -49,8 +47,8 @@ def find_optimal_sigma(x, xl, xu):
 # Executar 100 rodadas do algoritmo
 num_rounds = 100
 Nmax_per_round = 1000
-xl = -200
-xu = 20
+xl = -200.0
+xu = 0.0
 
 best_solutions = []
 best_values = []
