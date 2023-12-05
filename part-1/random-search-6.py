@@ -2,66 +2,89 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def candidato(x, epsilon):
-    return x + np.random.uniform(low=-epsilon, high=epsilon)
-
-def restricao_caixa(x, limite_inferior, limite_superior):
-    return np.maximum(limite_inferior, np.minimum(x, limite_superior))
-
-def funcao_objetivo(x1, x2):
+def objective_function(x1, x2):
     return x1 * np.sin(4 * np.pi * x1) - x2 * np.sin(4 * np.pi * x2 + np.pi) + 1
 
-def hill_climbing(limite_inferior_x1, limite_superior_x1, limite_inferior_x2, limite_superior_x2, epsilon, maxit):
-    x1_best = np.random.uniform(low=limite_inferior_x1, high=limite_superior_x1)
-    x2_best = np.random.uniform(low=limite_inferior_x2, high=limite_superior_x2)
-    fbest = funcao_objetivo(x1_best, x2_best)
+def is_valid(x1, x2, xl, xu):
+    return xl <= x1 <= xu and xl <= x2 <= xu
 
-    for _ in range(maxit):
-        x1_candidate = restricao_caixa(candidato(x1_best, epsilon), limite_inferior_x1, limite_superior_x1)
-        x2_candidate = restricao_caixa(candidato(x2_best, epsilon), limite_inferior_x2, limite_superior_x2)
-        f_candidate = funcao_objetivo(x1_candidate, x2_candidate)
+def random_search(Nmax, xl, xu):
+    x1_best, x2_best = np.random.uniform(low=xl, high=xu, size=2)
+    fbest = objective_function(x1_best, x2_best)
+    sigma = find_optimal_sigma([x1_best, x2_best], xl, xu)
+    
+    for i in range(Nmax):
+        n = np.random.normal(0, sigma, size=2)
+        x1_cand, x2_cand = x1_best + n[0], x2_best + n[1]
+        
+        if is_valid(x1_cand, x2_cand, xl, xu):
+            fcand = objective_function(x1_cand, x2_cand)
+            
+            if fcand > fbest:
+                x1_best, x2_best = x1_cand, x2_cand
+                fbest = fcand
+    
+    return [x1_best, x2_best], fbest, sigma
 
-        if f_candidate > fbest:
-            x1_best, x2_best = x1_candidate, x2_candidate
-            fbest = f_candidate
+def find_optimal_sigma(x, xl, xu):
+    sigma_values = np.linspace(0.01, 1.0, 100)
+    best_value = float('inf')
+    best_sigma = sigma_values[0]  # Defina um valor padrão
+    
+    for sigma in sigma_values:
+        n = np.random.normal(0, sigma, size=2)
+        x1_cand, x2_cand = x[0] + n[0], x[1] + n[1]
+        
+        if is_valid(x1_cand, x2_cand, xl, xu):
+            fcand = objective_function(x1_cand, x2_cand)
+            
+            if fcand < best_value:
+                best_value = fcand
+                best_sigma = sigma
+    
+    return best_sigma
 
-    return x1_best, x2_best, fbest
+# Executar 100 rodadas do algoritmo
+num_rounds = 100
+Nmax_per_round = 1000
+xl = -1.0
+xu = 3.0
 
-# Substitua os valores apropriados
-limite_inferior_x1 = -1
-limite_superior_x1 = 3
-limite_inferior_x2 = -1
-limite_superior_x2 = 3
-epsilon = 0.1
-maxit = 1000
-rodadas = 100
+best_solutions = []
+best_values = []
+best_sigmas = []
 
-# Encontra o ótimo global entre as rodadas
-resultados_globais = [hill_climbing(limite_inferior_x1, limite_superior_x1, limite_inferior_x2, limite_superior_x2, epsilon, maxit) for _ in range(rodadas)]
-resultado_otimo_global = max(resultados_globais, key=lambda x: x[2])
+for _ in range(num_rounds):
+    best_solution, best_value, best_sigma = random_search(Nmax_per_round, xl, xu)
+    best_solutions.append(best_solution)
+    best_values.append(best_value)
+    best_sigmas.append(best_sigma)
 
-# Criação do gráfico da função
-x1_vals = np.linspace(limite_inferior_x1, limite_superior_x1, 100)
-x2_vals = np.linspace(limite_inferior_x2, limite_superior_x2, 100)
-X1, X2 = np.meshgrid(x1_vals, x2_vals)
-Y = funcao_objetivo(X1, X2)
+# Encontrar a melhor solução entre todas as rodadas
+index_of_best_solution = np.argmax(best_values)
+overall_best_solution = best_solutions[index_of_best_solution]
+overall_best_value = best_values[index_of_best_solution]
+min_value_optimal_solution = min(best_sigmas)
+print("Menor valor que encontra a solução ótima:", min_value_optimal_solution)
 
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
-ax.plot_surface(X1, X2, Y, rstride=10, cstride=10, alpha=0.6, cmap='viridis')
+# Criar um gráfico 3D para visualizar a função e as melhores soluções
+x1_range = np.linspace(xl, xu, 100)
+x2_range = np.linspace(xl, xu, 100)
+x1_mesh, x2_mesh = np.meshgrid(x1_range, x2_range)
+f_values = objective_function(x1_mesh, x2_mesh)
 
-# Plota os ótimos de cada rodada de forma mais transparente
-for resultado in resultados_globais:
-    ax.scatter(resultado[0], resultado[1], resultado[2], marker='o', s=50, linewidth=1, color='green', alpha=0.2)
-
-# Plota o ótimo global de forma mais destacada
-ax.scatter(resultado_otimo_global[0], resultado_otimo_global[1], resultado_otimo_global[2], marker='x', s=200, linewidth=3, color='red', label='Ótimo Global')
-
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(x1_mesh, x2_mesh, f_values, cmap='viridis', alpha=0.8)
 ax.set_xlabel('x1')
 ax.set_ylabel('x2')
-ax.set_zlabel('f(x1, x2)')
-ax.set_title('f(x1, x2) - Hill Climbing (Mínimo) - Ótimo Global')
+ax.set_zlabel('Valor da Função Objetivo')
+ax.set_title('Função Objetivo em Projeção 3D')
+
+best_solutions = np.array(best_solutions)
+ax.scatter(best_solutions[:, 0], best_solutions[:, 1], best_values, c='red', marker='x', label='Melhores Soluções')
+
+ax.scatter(overall_best_solution[0], overall_best_solution[1], overall_best_value, c='blue', marker='*', s=200, label='Melhor Solução Geral')
 ax.legend()
 
-plt.tight_layout()
 plt.show()
