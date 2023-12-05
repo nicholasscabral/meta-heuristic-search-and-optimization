@@ -16,8 +16,6 @@ def hill_climbing(limite_inferior, limite_superior, epsilon, maxit):
     x2_best = np.random.uniform(low=limite_inferior, high=limite_superior)
     fbest = funcao_objetivo(x1_best, x2_best)
 
-    resultados = []
-
     for _ in range(maxit):
         x1_candidate = restricao_caixa(candidato(x1_best, epsilon), limite_inferior, limite_superior)
         x2_candidate = restricao_caixa(candidato(x2_best, epsilon), limite_inferior, limite_superior)
@@ -27,9 +25,7 @@ def hill_climbing(limite_inferior, limite_superior, epsilon, maxit):
             x1_best, x2_best = x1_candidate, x2_candidate
             fbest = f_candidate
 
-        resultados.append((x1_best, x2_best, fbest))
-
-    return resultados
+    return x1_best, x2_best, fbest
 
 # Substitua os valores apropriados
 limite_inferior = -100
@@ -39,19 +35,15 @@ maxit = 1000
 rodadas = 100
 
 # Executa o algoritmo Hill Climbing em 100 rodadas
-todos_resultados = []
+resultados_otimos_globais = []
 
 for _ in range(rodadas):
-    resultados = hill_climbing(limite_inferior, limite_superior, epsilon, maxit)
-    todos_resultados.extend(resultados)
+    resultado_otimo_global = hill_climbing(limite_inferior, limite_superior, epsilon, maxit)
+    print(resultado_otimo_global)
+    resultados_otimos_globais.append(resultado_otimo_global)
 
-
-# Encontra o resultado ótimo em cada rodada
-resultados_otimos = [min(todos_resultados[i:i+maxit], key=lambda x: x[2]) for i in range(0, len(todos_resultados), maxit)]
-
-# Encontra o resultado ótimo global
-resultado_otimo_global = min(resultados_otimos, key=lambda x: x[2])
-print(resultado_otimo_global)
+# Encontra o resultado ótimo global entre todas as rodadas
+resultado_otimo_global = min(resultados_otimos_globais, key=lambda x: x[2])
 
 # Criação do gráfico
 x1 = np.linspace(-100, 100, 1000)
@@ -62,8 +54,8 @@ fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 ax.plot_surface(X1, X2, Y, rstride=10, cstride=10, alpha=0.6, cmap='jet')
 
-for resultado_otimo in resultados_otimos:
-    ax.scatter(resultado_otimo[0], resultado_otimo[1], resultado_otimo[2], marker='x', s=90, linewidth=3, color='green')
+#for resultado_otimo in resultados_otimos_globais:
+#    ax.scatter(resultado_otimo[0], resultado_otimo[1], resultado_otimo[2], marker='x', s=90, linewidth=3, color='green')
 
 # Destaca o resultado ótimo global com uma cor diferente
 ax.scatter(resultado_otimo_global[0], resultado_otimo_global[1], resultado_otimo_global[2], marker='x', s=90, linewidth=3, color='black', label='Ótimo Global')
