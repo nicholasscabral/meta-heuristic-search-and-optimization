@@ -8,68 +8,50 @@ def objective_function(x):
 def is_valid(x, xl, xu):
     return xl <= x[0] <= xu and xl <= x[1] <= xu
 
-def random_search(Nmax, xl, xu):
-    xbest = np.random.uniform(low=xl, high=xu, size=2)
-    fbest = objective_function(xbest)
-    sigma = find_optimal_sigma(xbest, xl, xu)
+def local_random_search(initial_solution, xl1, xu1, xl2, xu2, num_iterations):
+    current_solution = initial_solution
+    current_value = objective_function(current_solution)
     
-    for i in range(Nmax):
-        n = np.random.normal(0, sigma, size=2)
-        xcand = xbest + n
+    for i in range(num_iterations):
+        perturbation = np.random.normal(0, 0.1, size=2)  # Perturbação aleatória
+        candidate_solution = current_solution + perturbation
         
-        if is_valid(xcand, xl, xu):
-            fcand = objective_function(xcand)
+        if is_valid(candidate_solution, xl1, xu1) and is_valid(candidate_solution, xl2, xu2):
+            candidate_value = objective_function(candidate_solution)
             
-            if fcand < fbest:
-                xbest = xcand
-                fbest = fcand
+            if candidate_value < current_value:
+                current_solution = candidate_solution
+                current_value = candidate_value
     
-    return xbest, fbest, sigma
-
-def find_optimal_sigma(x, xl, xu):
-    sigma_values = np.linspace(0.01, 1.0, 100)
-    best_value = float('inf')
-    best_sigma = None
-    
-    for sigma in sigma_values:
-        n = np.random.normal(0, sigma, size=2)
-        xcand = x + n
-        
-        if is_valid(xcand, xl, xu):
-            fcand = objective_function(xcand)
-            
-            if fcand < best_value:
-                best_value = fcand
-                best_sigma = sigma
-    
-    return best_sigma
+    return current_solution, current_value
 
 # Executar 100 rodadas do algoritmo
 num_rounds = 100
-Nmax_per_round = 1000
-xl = -100.0
-xu = 100.0
+num_iterations_per_round = 1000
+xl1, xu1 = -100.0, 100.0  # Limites para x1
+xl2, xu2 = -100.0, 100.0    # Limites para x2
 
 best_solutions = []
 best_values = []
-best_sigmas = []
 
 for _ in range(num_rounds):
-    best_solution, best_value, best_sigma = random_search(Nmax_per_round, xl, xu)
+    # Escolha uma solução inicial aleatória dentro dos limites
+    initial_solution = np.random.uniform(low=[xl1, xl2], high=[xu1, xu2])
+    
+    # Executar a busca local aleatória
+    best_solution, best_value = local_random_search(initial_solution, xl1, xu1, xl2, xu2, num_iterations_per_round)
+    
     best_solutions.append(best_solution)
     best_values.append(best_value)
-    best_sigmas.append(best_sigma)
 
 # Encontrar a melhor solução entre todas as rodadas
 index_of_best_solution = np.argmin(best_values)
 overall_best_solution = best_solutions[index_of_best_solution]
 overall_best_value = best_values[index_of_best_solution]
-min_value_optimal_solution = min(best_sigmas)
-print("Menor valor que encontra a solução ótima:", min_value_optimal_solution)
 
 # Criar um gráfico 3D para visualizar a função e as melhores soluções
-x1_range = np.linspace(xl, xu, 100)
-x2_range = np.linspace(xl, xu, 100)
+x1_range = np.linspace(xl1, xu1, 100)
+x2_range = np.linspace(xl2, xu2, 100)
 x1_mesh, x2_mesh = np.meshgrid(x1_range, x2_range)
 f_values = objective_function([x1_mesh, x2_mesh])
 
@@ -88,3 +70,12 @@ ax.scatter(overall_best_solution[0], overall_best_solution[1], overall_best_valu
 ax.legend()
 
 plt.show()
+
+
+#adapte esse codigo para as seguintes funcoes objetivo: 
+# 
+#3. -20 * np.exp(-0.2 * np.sqrt(0.5 * (x1**2 + x2**2))) - np.exp(0.5 * (np.cos(2 * np.pi * x1) + np.cos(2 * np.pi * x2))) + 20 + np.exp(1)
+#4. (x1**2 - 10 * np.cos(2 * np.pi * x1) + 10) + (x2**2 - 10 * np.cos(2 * np.pi * x2) + 10)
+#5. (x1 - 1)**2 + 100 * (x2 - x1**2)**2
+#7. (-np.sin(x1) * (np.sin((x1**2) / np.pi))**2 * 1e-10) + (-np.sin(x2) * (np.sin((2 * x2**2) / np.pi))**2 * 1e-10)
+#8. -(x2 + 47) * np.sin(np.sqrt(np.abs(x1/2 + (x2 + 47)))) - x1 * np.sin(np.sqrt(np.abs(x1 - (x2 + 47))))
