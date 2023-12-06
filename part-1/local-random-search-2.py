@@ -5,71 +5,81 @@ from mpl_toolkits.mplot3d import Axes3D
 def objective_function(x1, x2):
     return np.exp(-(x1**2 + x2**2)) + 2 * np.exp(-((x1 - 1.7)**2 + (x2 - 1.7)**2))
 
-def is_valid(x1, x2, xl, xu):
-    return xl <= x1 <= xu and xl <= x2 <= xu
+def is_valid(x1, x2, xl1, xu1, xl2, xu2):
+    return xl1 <= x1 <= xu1 and xl2 <= x2 <= xu2
 
-def random_search(Nmax, xl, xu):
-    x1_best, x2_best = np.random.uniform(low=xl, high=xu, size=2)
-    fbest = objective_function(x1_best, x2_best)
-    sigma = find_optimal_sigma([x1_best, x2_best], xl, xu)
-    
-    for i in range(Nmax):
-        n = np.random.normal(0, sigma, size=2)
-        x1_cand, x2_cand = x1_best + n[0], x2_best + n[1]
-        
-        if is_valid(x1_cand, x2_cand, xl, xu):
-            fcand = objective_function(x1_cand, x2_cand)
-            
-            if fcand > fbest:
-                x1_best, x2_best = x1_cand, x2_cand
-                fbest = fcand
-    
-    return [x1_best, x2_best], fbest, sigma
-
-def find_optimal_sigma(x, xl, xu):
-    sigma_values = np.linspace(0.01, 1.0, 100)
+def find_optimal_sigma(x, xl1, xu1, xl2, xu2, sigma_min, sigma_max, objective_function):
     best_value = float('inf')
-    best_sigma = sigma_values[0]  # Defina um valor padrão
+    best_sigma = None
     
-    for sigma in sigma_values:
-        n = np.random.normal(0, sigma, size=2)
-        x1_cand, x2_cand = x[0] + n[0], x[1] + n[1]
-        
-        if is_valid(x1_cand, x2_cand, xl, xu):
-            fcand = objective_function(x1_cand, x2_cand)
-            
-            if fcand < best_value:
-                best_value = fcand
-                best_sigma = sigma
+    for sigma_candidate in np.linspace(sigma_min, sigma_max, 100):
+        candidate_solution, candidate_value = local_random_search_iteration(x, xl1, xu1, xl2, xu2, sigma_candidate, objective_function)
+        if candidate_value < best_value:
+            best_value = candidate_value
+            best_sigma = sigma_candidate
     
     return best_sigma
 
+def local_random_search_iteration(initial_solution, xl1, xu1, xl2, xu2, sigma, objective_function):
+    current_solution = initial_solution
+    current_value = objective_function(*current_solution)
+    
+    perturbation = np.random.normal(0, sigma, size=2)  # Perturbação aleatória
+    candidate_solution = current_solution + perturbation
+    
+    if is_valid(candidate_solution[0], candidate_solution[1], xl1, xu1, xl2, xu2):
+        candidate_value = objective_function(*candidate_solution)
+        
+        if candidate_value > current_value:
+            current_solution = candidate_solution
+            current_value = candidate_value
+    
+    return current_solution, current_value
+
+def local_random_search(xl1, xu1, xl2, xu2, sigma_min, sigma_max, num_iterations_per_round, objective_function):
+    # Inicialização do melhor candidato
+    xbest = np.random.uniform(low=[xl1, xl2], high=[xu1, xu2])
+    fbest = objective_function(*xbest)
+    
+    # Encontrar o melhor valor de sigma
+    best_sigma = find_optimal_sigma(xbest, xl1, xu1, xl2, xu2, sigma_min, sigma_max, objective_function)
+    
+    # Executar a busca local aleatória com o melhor valor de sigma
+    for _ in range(num_iterations_per_round):
+        xbest, fbest = local_random_search_iteration(xbest, xl1, xu1, xl2, xu2, best_sigma, objective_function)
+    
+    return xbest, fbest, best_sigma
+
+#desvio padrão
+sigma_min = 0.01
+sigma_max = 1.0
 # Executar 100 rodadas do algoritmo
 num_rounds = 100
-Nmax_per_round = 1000
-xl = -2.0
-xu = 4.0
+num_iterations_per_round = 1000
+xl1, xu1 = -2.0, 4.0  # Limites para x1
+xl2, xu2 = -2.0, 4.0    # Limites para x2
 
 best_solutions = []
 best_values = []
-best_sigmas = []
 
 for _ in range(num_rounds):
-    best_solution, best_value, best_sigma = random_search(Nmax_per_round, xl, xu)
+    # Escolha uma solução inicial aleatória dentro dos limites
+    initial_solution = np.random.uniform(low=[xl1, xl2], high=[xu1, xu2])
+    
+    # Executar a busca local aleatória
+    best_solution, best_value, _ = local_random_search(xl1, xu1, xl2, xu2, sigma_min, sigma_max, num_iterations_per_round, objective_function)
+    
     best_solutions.append(best_solution)
     best_values.append(best_value)
-    best_sigmas.append(best_sigma)
 
 # Encontrar a melhor solução entre todas as rodadas
 index_of_best_solution = np.argmax(best_values)
 overall_best_solution = best_solutions[index_of_best_solution]
 overall_best_value = best_values[index_of_best_solution]
-min_value_optimal_solution = min(best_sigmas)
-print("Menor valor que encontra a solução ótima:", min_value_optimal_solution)
 
 # Criar um gráfico 3D para visualizar a função e as melhores soluções
-x1_range = np.linspace(xl, xu, 100)
-x2_range = np.linspace(xl, xu, 100)
+x1_range = np.linspace(xl1, xu1, 100)
+x2_range = np.linspace(xl2, xu2, 100)
 x1_mesh, x2_mesh = np.meshgrid(x1_range, x2_range)
 f_values = objective_function(x1_mesh, x2_mesh)
 
