@@ -39,11 +39,12 @@ resultados_otimos_globais = []
 
 for _ in range(rodadas):
     resultado_otimo_global = hill_climbing(limite_inferior, limite_superior, epsilon, maxit)
-    print(resultado_otimo_global)
+    #print(resultado_otimo_global)
     resultados_otimos_globais.append(resultado_otimo_global)
 
 # Encontra o resultado ótimo global entre todas as rodadas
 resultado_otimo_global = min(resultados_otimos_globais, key=lambda x: x[2])
+print(resultado_otimo_global)
 
 # Criação do gráfico
 x1 = np.linspace(-100, 100, 1000)
