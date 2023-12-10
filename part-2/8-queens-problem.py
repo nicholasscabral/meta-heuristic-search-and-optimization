@@ -182,15 +182,13 @@ def plot_chessboard_with_queens(arrangement, num_queens):
     ax.set_yticks(np.arange(8))
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    ax.tick_params(length=0)  # Remove as marcas dos eixos
+    ax.tick_params(length=0)
 
-    # Preencher os quadrados do tabuleiro com bordas pretas
     for i in range(num_queens):
         for j in range(num_queens):
             color = "white" if (i + j) % 2 == 0 else "black"
             ax.fill_between([i, i + 1], j, j + 1, color=color, edgecolor="black")
 
-    # Adicionar rainhas ao tabuleiro
     for col, row in enumerate(arrangement):
         ax.text(
             col + 0.5,
@@ -206,14 +204,9 @@ def plot_chessboard_with_queens(arrangement, num_queens):
     plt.show()
 
 
-# Definição do problema das 8 rainhas
 num_queens = 8
-
-# Req 1. Definição da quantidade N de indivíduos em uma população e quantidade máxima de gerações.
 pop_size = 100
 max_generations = 1000
-
-# Probabilidades
 mutation_prob = 0.01
 crossover_prob = 0.9
 
@@ -224,9 +217,9 @@ best_solution, best_fitness = original_genetic_algorithm(
     crossover_prob=crossover_prob,
 )
 
-# print("Melhor arranjo de rainhas:", best_solution)
-# print("Quantidade de pares de rainhas atacantes:", best_fitness)
-# plot_chessboard_with_queens(best_solution, num_queens)
+print("Melhor arranjo de rainhas:", best_solution)
+print("Quantidade de pares de rainhas atacantes:", best_fitness)
+plot_chessboard_with_queens(best_solution, num_queens)
 
 
 all_solutions = genetic_algorithm_for_all_solutions(
