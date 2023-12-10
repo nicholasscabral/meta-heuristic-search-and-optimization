@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from problemas import definirlimites
+from statistics import mode
 
 #Função para candidato no Hill Climbing
 def candidato(x, epsilon):
@@ -35,7 +36,7 @@ def encontrar_otimo_global(tipo_problema, resultados_por_rodada):
 
     return resultado_otimo_global, resultados_globais
 
-def plotar_grafico(limites, funcao_objetivo, tipo_problema, resultados_globais, resultado_otimo_global, algoritmo):
+def plotar_grafico(limites, funcao_objetivo, tipo_problema, resultados_globais, resultado_otimo_global, algoritmo, nome):
     """
     Cria um gráfico 3D da função objetivo com destaque para os ótimos globais.
     """
@@ -60,7 +61,7 @@ def plotar_grafico(limites, funcao_objetivo, tipo_problema, resultados_globais, 
     ax.set_xlabel('x1')
     ax.set_ylabel('x2')
     ax.set_zlabel('f(x1, x2)')
-    ax.set_title(f'f(x1, x2) - {algoritmo} para Problemas de {tipo_problema} - Ótimos por Rodada e Ótimo Global')
+    ax.set_title(f'{nome} para Problemas de {tipo_problema} - Ótimos por Rodada e Ótimo Global')
     ax.legend()
 
     plt.tight_layout()
